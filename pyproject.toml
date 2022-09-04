@@ -1,0 +1,13 @@
+[build-system]
+requires = ["flit_core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "change_log_creator"
+authors = [{name = "Randall Morgan <rmorgan@sensornet.us>", email = "rmorgan@sensornet.us"}]
+license = {file = "LICENSE"}
+classifiers = ["License :: OSI Approved :: GNU General Public License v2 or later (GPLv2+)"]
+dynamic = ["version", "description"]
+
+[project.urls]
+Home = "https://www.coderancher.us"
