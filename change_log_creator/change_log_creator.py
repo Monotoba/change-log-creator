@@ -1,16 +1,20 @@
 from datetime import datetime
+from pathlib import Path
 
 from git import Repo
 
 
-def create_change_log_from_repo(repo: str = None, max_count=50):
+def create_change_log_from_repo(repo: str = None, max_count=50, branch: str = None):
 
-    if repo is not None:
+    if not repo:
         raise ValueError('A repository must be supplied!')
 
-    local_repo = Repo(repo)
+    if not isinstance(max_count, int) or isinstance(max_count, bool) or max_count <= 0:
+        raise ValueError("Commit count must be a positive integer")
 
-    commits = local_repo.iter_commits('master', max_count=max_count)
+    local_repo = Repo(Path(repo).expanduser())
+
+    commits = local_repo.iter_commits(branch or "HEAD", max_count=max_count)
 
     now = datetime.now()
     output = f"# CHANGE LOG\n\nDate: {now.strftime('%d/%m/%Y %H:%M:%S')}\n\n"

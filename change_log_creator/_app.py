@@ -1,17 +1,13 @@
 #!/usr/bin/env python3
 
 import argparse
-import os
+from git.exc import GitError
 
 from change_log_creator.change_log_creator import create_change_log_from_repo
 
 
-def main():
-    usage_msg = ""
-
-    parser = argparse.ArgumentParser()
-
-    parser = argparse.ArgumentParser(usage=usage_msg, prog="changelog-creator")
+def main(argv=None):
+    parser = argparse.ArgumentParser(prog="change-log-creator")
 
     parser.add_argument("-r", "--repo", help="The source repository", type=str, required=True)
     parser.add_argument("-b", "--branch", help="The repository branch to query", type=str, required=False)
@@ -19,25 +15,28 @@ def main():
     parser.add_argument("-o", "--outfile", help="The file to save the Markdown into\n", required=False)
     parser.add_argument("-f", "--force", help="Force output to overwrite existing file", action="store_true", required=False)
 
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     # Get command params or use defaults
     repo = args.repo
-    branch = args.branch if args.branch is not None else 'master'
+    branch = args.branch
     count = args.count if args.count is not None else 50
 
     # Get markdown
-    text = create_change_log_from_repo(repo=repo)
+    try:
+        text = create_change_log_from_repo(repo=repo, branch=branch, max_count=count)
+    except (GitError, OSError, ValueError) as exc:
+        parser.error(str(exc))
 
-    # Save to output file
+    # Exclusive creation prevents overwriting an existing file without --force.
     if args.outfile is not None:
-        if os.path.isfile(args.outfile) and not args.force:
-            raise ValueError(
-                f"Error: {args.outfile} file already exist! Use the --force (-f) flag to force overwriting existing files.")
-
-    if args.outfile is not None:
-        with open(args.outfile, 'w') as fho:
-            fho.write(text)
+        try:
+            with open(args.outfile, "w" if args.force else "x", encoding="utf-8") as fho:
+                fho.write(text)
+        except FileExistsError:
+            parser.error("Output file already exists; use --force (-f) to overwrite it")
+        except OSError as exc:
+            parser.error(str(exc))
     else:
         print(text)
 
