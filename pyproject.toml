@@ -4,10 +4,17 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "change_log_creator"
-authors = [{name = "Randall Morgan <rmorgan@sensornet.us>", email = "rmorgan@sensornet.us"}]
+authors = [{name = "Randall Morgan", email = "rmorgan@sensornet.us"}]
 license = {file = "LICENSE"}
-classifiers = ["License :: OSI Approved :: GNU General Public License v2 or later (GPLv2+)"]
+classifiers = ["License :: OSI Approved :: BSD License"]
 dynamic = ["version", "description"]
+requires-python = ">=3.10"
+dependencies = ["GitPython>=3.1,<4"]
+readme = "README.md"
+
+[project.scripts]
+change-log-creator = "change_log_creator._app:main"
 
 [project.urls]
-Home = "https://www.coderancher.us"
+Homepage = "https://github.com/Monotoba/change-log-creator"
+Issues = "https://github.com/Monotoba/change-log-creator/issues"

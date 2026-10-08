@@ -1,78 +1,82 @@
-# CHANGELOG CREATOR
+# Change Log Creator
 
-A tool for generating change log documents from Git Repositories.
+[![Tests](https://github.com/Monotoba/change-log-creator/actions/workflows/tests.yml/badge.svg)](https://github.com/Monotoba/change-log-creator/actions/workflows/tests.yml)
+![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
+[![License](https://img.shields.io/badge/License-BSD--2--Clause-blue)](LICENSE)
 
-Copyright 2022 Randall Morgan
+Generate a Markdown commit-history report from a local Git repository. Use it to
+review recent work or prepare a changelog draft for a branch or revision.
+Each entry contains the commit message, committer identity, authored timestamp,
+and author timezone offset. This is a raw history report, not a curated release-note generator.
 
-## Introduction
+## Install
 
-This script can read the commit logs of a Git repository and 
-extract data to produce changelogs in Markdown format.
+Requires Python 3.10+ and Git on PATH. From a terminal:
 
-## Usage
-
-This script can be run from the commandline. The following 
-commandline options are available:
-
-#### Command-Line Options:
-
-```
-options:
-
-  -h, --help            show this help message and exit
-  
--r REPO, --repo REPO    The source repository
-  
--b BRANCH, --branch BRANCH
-                        The repository branch to query
-
--c COUNT, --count COUNT
-                        The maximum number of commits to report
-
--o OUTFILE, --outfile OUTFILE
-                        The file to save the Markdown into
-
--f, --force              Force output to overwrite existing file
+```sh
+git clone https://github.com/Monotoba/change-log-creator.git
+cd change-log-creator
+python -m venv .venv
+# Linux/macOS:
+. .venv/bin/activate
+# Windows PowerShell instead: .venv\Scripts\Activate.ps1
+python -m pip install .
+change-log-creator --help
 ```
 
-A sample invocation to create a change log for a development branch:
-```
-$ change-log-creator -r ../ -b development -c 100 -o DEV_CHANGELOG.md -f
-```
+## Generate a report
 
-## API
-
-If you wish to use change-log-creator as a module in your own 
-document processor, the following text will help.
-
-The module contains a single useful method as documented below.
-
-```
-create_change_log_from_repo(repo: str = None, branch: str = 'master', max_count=50):
-
-    Creates a change log document in Markdown format.
-
-    Parameters
-    ----------
-    repo: str
-        The repository path
-    branch: str
-        The branch, defaults to "master"
-    max_count: int
-        The maximum number of commits to report
-
-    Returns
-    -------
-        str
+```sh
+change-log-creator -r ../my-project -c 20
+change-log-creator -r ../my-project -b development -c 100 -o DEV_CHANGELOG.md
 ```
 
+| Option | Meaning |
+|---|---|
+| `-r`, `--repo` | Required local Git repository path; `~` is expanded |
+| `-b`, `--branch` | Branch or revision; defaults to current `HEAD` |
+| `-c`, `--count` | Positive maximum commit count; defaults to 50 |
+| `-o`, `--outfile` | UTF-8 Markdown output path; defaults to standard output |
+| `-f`, `--force` | Permit overwriting an existing output file |
+
+Without `--force`, an existing output file is preserved and the command fails.
+Invalid repositories, revisions, or counts produce command-line errors.
+The original launcher remains available as `python change-log-creator.py ...`.
+
+## Python API
+
+```python
+from change_log_creator.change_log_creator import create_change_log_from_repo
+
+markdown = create_change_log_from_repo(
+    repo="../my-project", max_count=20, branch="HEAD"
+)
+```
+
+The API returns a string and raises exceptions for invalid inputs. It does not
+write output files. Omitting `branch` uses the current HEAD, including repositories
+whose default branch is `main`. An empty repository has no history to report.
+
+## Validation and contributions
+
+```sh
+python -m pip install -e .
+python -m unittest discover -s tests -v
+```
+
+Tests create real temporary Git repositories and check branch/count selection,
+CLI errors, output generation, and overwrite protection. CI tests Linux, macOS,
+and Windows, builds wheel/source packages, and checks the installed wheel command
+outside the checkout. See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## Limitations
+
+Commit messages are included verbatim in Markdown code fences; embedded fences may
+need editing before publication. Output timestamps use local time, and report dates
+change between runs. Committer identity may differ from the commit author. Reports
+can contain names, email addresses, or sensitive commit messages: review before sharing.
 
 ## License
-This software is licensed under the GNU General Public License 
-version 2 or later. At the user's discretion. You are free to
-use this script, and it's source code any way you like. 
 
-## Waranty
-This software is provided without warranty of any kind! The user is 
-solely responsibility to determine the suitability of this software 
-for their own specific use case.
+[BSD-2-Clause](LICENSE), copyright 2022 Randall Morgan. Retain the copyright notice
+and license terms when redistributing. Provided without warranty under the license.
